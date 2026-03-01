@@ -3,7 +3,7 @@
 
 ---
 
-## Stack
+## Stack 
 - **Frontend**: Vercel (free) — onboarding pages + admin panel
 - **Backend**: Vercel Serverless Functions
 - **Database**: Neon PostgreSQL (free tier)
