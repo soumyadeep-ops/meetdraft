@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeetDraft Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#080810;--sidebar:#0e0e18;--surface:#13131f;--surface2:#1a1a28;
+      --border:#1f1f32;--border2:#2a2a3e;
+      --accent:#6366f1;--accent2:#818cf8;--accent-glow:rgba(99,102,241,0.15);
+      --green:#34d399;--yellow:#fbbf24;--red:#f87171;--blue:#60a5fa;
+      --text:#e8e8f4;--muted:#6b6b88;--muted2:#4a4a64;
+    }
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px}
+    #root{height:100%;display:flex}
+    button{font-family:inherit;cursor:pointer;border:none;outline:none}
+    input,textarea,select{font-family:inherit;outline:none}
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+    /* ── LAYOUT ──────────────────────────────── */
+    .sidebar{
+      width:220px;flex-shrink:0;background:var(--sidebar);
+      border-right:1px solid var(--border);display:flex;flex-direction:column;
+      padding:1.5rem 0;overflow-y:auto;
+    }
+    .logo{padding:0 1.25rem 1.5rem;font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;
+          letter-spacing:0.04em;color:var(--accent2);display:flex;align-items:center;gap:0.5rem}
+    .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+    .nav-label{padding:0.35rem 1.25rem;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);font-weight:600;margin-top:0.5rem}
+    .nav-item{display:flex;align-items:center;gap:0.6rem;padding:0.55rem 1.25rem;font-size:0.875rem;
+              color:var(--muted);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent}
+    .nav-item:hover{color:var(--text);background:var(--accent-glow)}
+    .nav-item.active{color:var(--accent2);background:var(--accent-glow);border-left-color:var(--accent)}
+    .nav-icon{font-size:1rem;width:18px;text-align:center}
+
+    .main{flex:1;overflow-y:auto;background:var(--bg)}
+    .topbar{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:10;backdrop-filter:blur(8px)}
+    .page-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:-0.01em}
+    .page-content{padding:2rem}
+
+    /* ── COMPONENTS ──────────────────────────── */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
+    .card-sm{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+    @media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:1fr}}
+
+    .stat-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem}
+    .stat-value{font-family:'Syne',sans-serif;font-size:2rem;font-weight:700;letter-spacing:-0.02em}
+    .stat-sub{font-size:0.75rem;color:var(--muted);margin-top:0.25rem}
+
+    .badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.2rem 0.6rem;border-radius:100px;font-size:0.72rem;font-weight:500}
+    .badge-green{background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2)}
+    .badge-yellow{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.2)}
+    .badge-red{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2)}
+    .badge-blue{background:rgba(96,165,250,0.1);color:var(--blue);border:1px solid rgba(96,165,250,0.2)}
+    .badge-purple{background:rgba(99,102,241,0.1);color:var(--accent2);border:1px solid rgba(99,102,241,0.2)}
+
+    .btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:500;transition:all 0.15s;cursor:pointer}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-primary:hover{background:#5558e8;transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+    .btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+    .btn-danger{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2)}
+    .btn-danger:hover{background:rgba(248,113,113,0.2)}
+    .btn-sm{padding:0.3rem 0.7rem;font-size:0.78rem}
+
+    /* ── TOGGLE ──────────────────────────────── */
+    .toggle-group{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px}
+    .toggle-opt{padding:0.45rem 1.1rem;border-radius:8px;font-size:0.85rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.15s;background:transparent;border:none}
+    .toggle-opt.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,0.35)}
+
+    /* ── TABLE ───────────────────────────────── */
+    .table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse}
+    th{padding:0.6rem 1rem;text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);background:var(--surface2);font-weight:600}
+    td{padding:0.7rem 1rem;font-size:0.85rem;border-top:1px solid var(--border);color:var(--text)}
+    tr:hover td{background:rgba(255,255,255,0.015)}
+
+    /* ── FORM ────────────────────────────────── */
+    .field{margin-bottom:1rem}
+    .field label{display:block;font-size:0.78rem;color:var(--muted);margin-bottom:0.35rem;font-weight:500;letter-spacing:0.02em}
+    .input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.55rem 0.8rem;color:var(--text);font-size:0.875rem;transition:border 0.15s}
+    .input:focus{border-color:var(--accent)}
+    .textarea{resize:vertical;min-height:80px;line-height:1.5}
+    select.input option{background:var(--surface2)}
+
+    /* ── MODAL ───────────────────────────────── */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;padding:2rem;animation:modalIn 0.2s ease}
+    @keyframes modalIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem}
+    .close-btn{width:28px;height:28px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer}
+    .close-btn:hover{color:var(--text)}
+
+    /* ── SECTION BUILDER ─────────────────────── */
+    .section-list{display:flex;flex-direction:column;gap:0.5rem}
+    .section-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;display:flex;align-items:center;gap:0.75rem}
+    .section-drag{color:var(--muted2);cursor:grab;font-size:1.1rem}
+    .section-type-badge{font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--accent-glow);color:var(--accent2);font-weight:600;text-transform:uppercase;flex-shrink:0}
+    .section-toggle{margin-left:auto;width:36px;height:20px;border-radius:10px;cursor:pointer;border:none;position:relative;transition:background 0.2s;flex-shrink:0}
+    .section-toggle.on{background:var(--accent)}
+    .section-toggle.off{background:var(--muted2)}
+    .section-toggle::after{content:'';position:absolute;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s}
+    .section-toggle.on::after{left:18px}
+    .section-toggle.off::after{left:2px}
+
+    /* ── DIVIDER ─────────────────────────────── */
+    .divider{height:1px;background:var(--border);margin:1.25rem 0}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+    .section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem}
+
+    /* ── LOGIN ───────────────────────────────── */
+    .login-wrap{height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+    .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:340px;animation:fadeUp 0.4s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+    .dot-green{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+    .dot-red{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block}
+    .dot-yellow{width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block}
+
+    .empty{text-align:center;padding:3rem;color:var(--muted);font-size:0.9rem}
+    .loading{text-align:center;padding:3rem;color:var(--muted)}
+
+    .chips{display:flex;flex-wrap:wrap;gap:0.4rem}
+    .chip{padding:0.2rem 0.6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:0.75rem;color:var(--muted);cursor:pointer;transition:all 0.1s}
+    .chip.selected{background:var(--accent-glow);border-color:var(--accent);color:var(--accent2)}
+
+    .alert{padding:0.75rem 1rem;border-radius:8px;font-size:0.85rem;margin-bottom:1rem}
+    .alert-error{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);color:var(--red)}
+    .alert-success{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);color:var(--green)}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+// ── API HELPER ────────────────────────────────────────────────────────────────
+const API_KEY_STORE = 'md_admin_key';
+async function api(action, method = 'GET', body = null) {
+  const key = localStorage.getItem(API_KEY_STORE) || '';
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const url = `/api/admin?action=${action}`;
+  const res = await fetch(url, opts);
+  if (res.status === 401) throw new Error('UNAUTHORIZED');
+  return res.json();
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+function Login({ onLogin }) {
+  const [key, setKey] = useState('');
+  const [error, setError] = useState('');
+  const submit = async () => {
+    localStorage.setItem(API_KEY_STORE, key);
+    try {
+      await api('overview');
+      onLogin();
+    } catch {
+      setError('Invalid admin key');
+      localStorage.removeItem(API_KEY_STORE);
+    }
+  };
+  return (
+    <div className="login-wrap">
+      <div className="login-card">
+        <div style={{fontFamily:'Syne',fontWeight:800,fontSize:'1.4rem',marginBottom:'0.5rem',color:'var(--accent2)'}}>MeetDraft</div>
+        <div style={{color:'var(--muted)',fontSize:'0.85rem',marginBottom:'1.5rem'}}>Admin Panel</div>
+        {error && <div className="alert alert-error">{error}</div>}
+        <div className="field">
+          <label>Admin Secret Key</label>
+          <input className="input" type="password" value={key} onChange={e=>setKey(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&submit()} placeholder="Enter ADMIN_SECRET"/>
+        </div>
+        <button className="btn btn-primary" style={{width:'100%',justifyContent:'center'}} onClick={submit}>Sign In</button>
+      </div>
+    </div>
+  );
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+const NAV = [
+  { id:'overview', label:'Overview', icon:'📊' },
+  { id:'source', label:'Summary Source', icon:'⚙️' },
+  { id:'users', label:'Users', icon:'👥' },
+  { id:'templates', label:'Templates', icon:'📝' },
+  { id:'meetings', label:'Meeting History', icon:'📅' },
+];
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────────
+function Overview({ data }) {
+  const s = data.stats || {};
+  return (
+    <div>
+      <div className="grid-4" style={{marginBottom:'1.5rem'}}>
+        {[
+          { label:'Active Users', value: s.active_users||0, sub:'connected', color:'var(--accent2)' },
+          { label:'Zoom Connected', value: s.zoom_connected||0, sub:'users', color:'var(--blue)' },
+          { label:'Drafts Created', value: s.drafts_sent||0, sub:'total', color:'var(--green)' },
+          { label:'Errors', value: s.errors||0, sub:'meetings', color:s.errors>0?'var(--red)':'var(--muted)' },
+        ].map(s=>(
+          <div className="card" key={s.label}>
+            <div className="stat-label">{s.label}</div>
+            <div className="stat-value" style={{color:s.color}}>{s.value}</div>
+            <div className="stat-sub">{s.sub}</div>
+          </div>
+        ))}
+      </div>
+      <div className="grid-2">
+        <div className="card">
+          <div className="section-header"><div className="section-title">Recent Meetings</div></div>
+          {(data.recentMeetings||[]).slice(0,8).length === 0
+            ? <div className="empty">No meetings yet</div>
+            : <div className="table-wrap">
+                <table>
+                  <thead><tr><th>Host</th><th>Topic</th><th>Status</th><th>Date</th></tr></thead>
+                  <tbody>{(data.recentMeetings||[]).slice(0,8).map(m=>(
+                    <tr key={m.id}>
+                      <td style={{color:'var(--muted)',fontSize:'0.78rem'}}>{m.host_email?.split('@')[0]}</td>
+                      <td>{m.topic||'—'}</td>
+                      <td>{m.draft_created ? <span className="badge badge-green">✓ Draft created</span>
+                        : m.error ? <span className="badge badge-red">Error</span>
+                        : <span className="badge badge-yellow">Pending</span>}</td>
+                      <td style={{color:'var(--muted)',fontSize:'0.78rem'}}>{m.created_at ? new Date(m.created_at).toLocaleDateString() : '—'}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+          }
+        </div>
+        <div className="card">
+          <div className="section-header"><div className="section-title">Quick Stats</div></div>
+          <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}>
+            {[
+              { label:'Fireflies connected', value:`${s.fireflies_connected||0} users`, color:'var(--yellow)' },
+              { label:'Google connected', value:`${s.google_connected||0} users`, color:'var(--green)' },
+              { label:'Summary source', value: (data.settings?.summary_source||'zoom').toUpperCase(), color:'var(--accent2)' },
+              { label:'Active templates', value:`${(data.templates||[]).length}`, color:'var(--blue)' },
+            ].map(i=>(
+              <div key={i.label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0.6rem 0',borderBottom:'1px solid var(--border)'}}>
+                <span style={{color:'var(--muted)',fontSize:'0.85rem'}}>{i.label}</span>
+                <span style={{fontWeight:600,color:i.color,fontSize:'0.85rem'}}>{i.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SOURCE TOGGLE ─────────────────────────────────────────────────────────────
+function SourceSettings({ data, onRefresh }) {
+  const current = data.settings?.summary_source || 'zoom';
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  const setSource = async (val) => {
+    setSaving(true);
+    await api('setting', 'POST', { key: 'summary_source', value: val });
+    await onRefresh();
+    setMsg(`Switched to ${val}`);
+    setSaving(false);
+    setTimeout(() => setMsg(''), 3000);
+  };
+
+  return (
+    <div style={{maxWidth:600}}>
+      <div className="card" style={{marginBottom:'1rem'}}>
+        <div className="section-header">
+          <div className="section-title">Summary Source</div>
+        </div>
+        <p style={{color:'var(--muted)',fontSize:'0.875rem',marginBottom:'1.5rem',lineHeight:1.6}}>
+          Choose where meeting summaries come from. Only one source is active at a time.
+          If the active source fails, Zoom transcript is used as fallback.
+        </p>
+        {msg && <div className="alert alert-success">{msg}</div>}
+        <div className="toggle-group" style={{width:'fit-content',marginBottom:'1.5rem'}}>
+          <button className={`toggle-opt ${current==='zoom'?'active':''}`} onClick={()=>setSource('zoom')} disabled={saving}>
+            📹 Zoom AI Summary
+          </button>
+          <button className={`toggle-opt ${current==='fireflies'?'active':''}`} onClick={()=>setSource('fireflies')} disabled={saving}>
+            🦋 Fireflies
+          </button>
+        </div>
+        <div className="grid-2">
+          <div className="card-sm" style={{border: current==='zoom'?'1px solid var(--accent)':''}}>
+            <div style={{fontWeight:600,marginBottom:'0.4rem',display:'flex',alignItems:'center',gap:'0.5rem'}}>
+              📹 Zoom AI Summary {current==='zoom' && <span className="badge badge-green">Active</span>}
+            </div>
+            <p style={{color:'var(--muted)',fontSize:'0.8rem',lineHeight:1.5}}>Uses Zoom's built-in AI Companion for meeting summaries and action items. Requires Zoom AI Companion add-on. Falls back to raw transcript if unavailable.</p>
+          </div>
+          <div className="card-sm" style={{border: current==='fireflies'?'1px solid var(--accent)':''}}>
+            <div style={{fontWeight:600,marginBottom:'0.4rem',display:'flex',alignItems:'center',gap:'0.5rem'}}>
+              🦋 Fireflies.ai {current==='fireflies' && <span className="badge badge-green">Active</span>}
+            </div>
+            <p style={{color:'var(--muted)',fontSize:'0.8rem',lineHeight:1.5}}>Uses Fireflies.ai for richer summaries, action items, and keyword extraction. Each user needs their own Fireflies API key connected.</p>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <div className="section-title" style={{marginBottom:'0.75rem'}}>Fireflies Coverage</div>
+        <p style={{color:'var(--muted)',fontSize:'0.8rem',marginBottom:'1rem'}}>{(data.stats?.fireflies_connected||0)} of {(data.stats?.active_users||0)} users have Fireflies connected.</p>
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Fireflies</th></tr></thead>
+            <tbody>{(data.users||[]).map(u=>(
+              <tr key={u.email}>
+                <td>{u.email}</td>
+                <td>{u.fireflies_connected ? <span className="badge badge-green">Connected</span> : <span className="badge badge-yellow">Not connected</span>}</td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── USERS ─────────────────────────────────────────────────────────────────────
+function Users({ data, onRefresh }) {
+  const [editUser, setEditUser] = useState(null);
+  const [group, setGroup] = useState('');
+  const [templateId, setTemplateId] = useState('');
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteName, setInviteName] = useState('');
+  const [inviteGroup, setInviteGroup] = useState('default');
+  const [bulkText, setBulkText] = useState('');
+  const [inviteTab, setInviteTab] = useState('single');
+  const [msg, setMsg] = useState('');
+  const [inviteMsg, setInviteMsg] = useState('');
+  const [copiedEmail, setCopiedEmail] = useState(null);
+
+  const saveUser = async () => {
+    if (group) await api('user_group', 'POST', { email: editUser.email, group_name: group });
+    if (templateId) await api('assign_template', 'POST', { template_id: parseInt(templateId), user_emails: [editUser.email] });
+    await onRefresh();
+    setMsg('Saved!');
+    setTimeout(() => { setMsg(''); setEditUser(null); }, 1500);
+  };
+
+  const toggleUser = async (email) => {
+    await api('toggle_user', 'POST', { email });
+    await onRefresh();
+  };
+
+  const copyLink = async (url, email) => {
+    await navigator.clipboard.writeText(url);
+    setCopiedEmail(email);
+    setTimeout(() => setCopiedEmail(null), 2000);
+  };
+
+  const resendInvite = async (email) => {
+    await api('resend_invite', 'POST', { email });
+    setMsg('Invite resent to ' + email);
+    setTimeout(() => setMsg(''), 3000);
+  };
+
+  const sendInvite = async () => {
+    if (!inviteEmail) return;
+    setInviteMsg('Sending...');
+    try {
+      const res = await api('invite_user', 'POST', { email: inviteEmail, name: inviteName, group_name: inviteGroup });
+      await onRefresh();
+      setInviteMsg('✓ Invite sent! Link: ' + res.invite_url);
+      setInviteEmail(''); setInviteName('');
+    } catch { setInviteMsg('Error sending invite'); }
+  };
+
+  const sendBulk = async () => {
+    const lines = bulkText.split('
+').map(l => l.trim()).filter(Boolean);
+    const emails = lines.map(l => {
+      const parts = l.split(',');
+      return { email: parts[0].trim(), name: (parts[1]||'').trim() };
+    }).filter(e => e.email.includes('@'));
+    if (!emails.length) return setInviteMsg('No valid emails found');
+    setInviteMsg('Sending ' + emails.length + ' invites...');
+    await api('bulk_invite', 'POST', { emails, group_name: inviteGroup });
+    await onRefresh();
+    setInviteMsg('✓ ' + emails.length + ' invites sent!');
+    setBulkText('');
+  };
+
+  const pendingCount = (data.users||[]).filter(u => u.invite_url && !u.onboarded).length;
+  const onboardedCount = (data.users||[]).filter(u => u.onboarded).length;
+
+  return (
+    <div>
+      <div className="section-header">
+        <div style={{display:'flex',alignItems:'center',gap:'1rem'}}>
+          <div className="section-title">Users ({(data.users||[]).length})</div>
+          <span className="badge badge-green">{onboardedCount} onboarded</span>
+          {pendingCount > 0 && <span className="badge badge-yellow">{pendingCount} pending</span>}
+        </div>
+        <button className="btn btn-primary" onClick={()=>setShowInvite(true)}>+ Invite Users</button>
+      </div>
+
+      {msg && <div className="alert alert-success" style={{marginBottom:'1rem'}}>{msg}</div>}
+
+      <div className="table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Zoom Account</th><th>Zoom</th><th>Gmail</th><th>FF</th><th>Group</th><th>Invite Status</th><th>Invite Link</th><th></th></tr></thead>
+          <tbody>{(data.users||[]).length===0
+            ? <tr><td colSpan={8}><div className="empty">No users yet — invite someone above!</div></td></tr>
+            : (data.users||[]).map(u=>(
+              <tr key={u.email}>
+                <td>
+                  <div style={{fontWeight:500}}>{u.name||u.email.split('@')[0]}</div>
+                  <div style={{fontSize:'0.75rem',color:'var(--muted)'}}>{u.email}</div>
+                </td>
+                <td>
+                  {u.zoom_email && u.zoom_email !== u.email
+                    ? <div><div style={{fontSize:'0.8rem'}}>{u.zoom_email}</div><div style={{fontSize:'0.7rem',color:'var(--yellow)'}}>shared account</div></div>
+                    : <span style={{fontSize:'0.78rem',color:'var(--muted)'}}>{u.zoom_email||'—'}</span>}
+                </td>
+                <td>{u.zoom_connected?<span className="dot-green"/>:<span className="dot-red"/>}</td>
+                <td>{u.google_connected?<span className="dot-green"/>:<span className="dot-red"/>}</td>
+                <td>{u.fireflies_connected?<span className="dot-green"/>:<span style={{color:'var(--muted2)',fontSize:'0.8rem'}}>—</span>}</td>
+                <td><span className="badge badge-blue">{u.group_name||'default'}</span></td>
+                <td>
+                  {u.onboarded
+                    ? <span className="badge badge-green">✓ Onboarded</span>
+                    : u.invite_url
+                      ? <span className="badge badge-yellow">⏳ Invite sent {u.invite_sent_at ? new Date(u.invite_sent_at).toLocaleDateString() : ''}</span>
+                      : <span style={{color:'var(--muted2)',fontSize:'0.78rem'}}>—</span>}
+                </td>
+                <td>
+                  {u.invite_url && !u.onboarded ? (
+                    <div style={{display:'flex',gap:'0.35rem'}}>
+                      <button className="btn btn-ghost btn-sm" title="Copy link"
+                        onClick={()=>copyLink(u.invite_url, u.email)}
+                        style={{minWidth:72}}>
+                        {copiedEmail===u.email ? '✓ Copied' : '🔗 Copy'}
+                      </button>
+                      <button className="btn btn-ghost btn-sm" onClick={()=>resendInvite(u.email)} title="Resend email">↺</button>
+                    </div>
+                  ) : u.onboarded ? <span style={{color:'var(--muted2)',fontSize:'0.75rem'}}>complete</span> : null}
+                </td>
+                <td>
+                  <div style={{display:'flex',gap:'0.4rem'}}>
+                    <button className="btn btn-ghost btn-sm" onClick={()=>{setEditUser(u);setGroup(u.group_name||'default');setTemplateId(u.template_id||'')}}>Edit</button>
+                    <button className="btn btn-ghost btn-sm" onClick={()=>toggleUser(u.email)}>{u.is_active?'Disable':'Enable'}</button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          }</tbody>
+        </table>
+      </div>
+
+      {/* ── INVITE MODAL ── */}
+      {showInvite && (
+        <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&setShowInvite(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">Invite Users</div>
+              <button className="close-btn" onClick={()=>setShowInvite(false)}>×</button>
+            </div>
+            <p style={{color:'var(--muted)',fontSize:'0.85rem',marginBottom:'1.25rem',lineHeight:1.6}}>
+              Each person gets a <strong style={{color:'var(--text)'}}>unique invite link</strong> sent to their email.
+              They click it, connect Zoom + Gmail in 60 seconds, and they're done.
+            </p>
+
+            <div className="toggle-group" style={{width:'fit-content',marginBottom:'1.25rem'}}>
+              <button className={`toggle-opt ${inviteTab==='single'?'active':''}`} onClick={()=>setInviteTab('single')}>Single</button>
+              <button className={`toggle-opt ${inviteTab==='bulk'?'active':''}`} onClick={()=>setInviteTab('bulk')}>Bulk</button>
+            </div>
+
+            {inviteTab==='single' ? (
+              <>
+                <div className="grid-2">
+                  <div className="field">
+                    <label>Email Address *</label>
+                    <input className="input" type="email" value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)} placeholder="sarah@company.com"/>
+                  </div>
+                  <div className="field">
+                    <label>Name (optional)</label>
+                    <input className="input" value={inviteName} onChange={e=>setInviteName(e.target.value)} placeholder="Sarah"/>
+                  </div>
+                </div>
+                <div className="field">
+                  <label>Group</label>
+                  <input className="input" value={inviteGroup} onChange={e=>setInviteGroup(e.target.value)} placeholder="default, sales, engineering…"/>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="field">
+                  <label>Paste emails — one per line. Format: <span style={{color:'var(--accent2)'}}>email, name</span> (name optional)</label>
+                  <textarea className="input textarea" style={{minHeight:120,fontFamily:'monospace',fontSize:'0.82rem'}}
+                    value={bulkText} onChange={e=>setBulkText(e.target.value)}
+                    placeholder={"sarah@company.com, Sarah
+john@company.com
+mike@company.com, Mike"}/>
+                </div>
+                <div className="field">
+                  <label>Assign Group</label>
+                  <input className="input" value={inviteGroup} onChange={e=>setInviteGroup(e.target.value)} placeholder="default"/>
+                </div>
+              </>
+            )}
+
+            {inviteMsg && (
+              <div className={`alert ${inviteMsg.startsWith('✓')?'alert-success':'alert-error'}`}
+                style={{wordBreak:'break-all',fontSize:'0.8rem'}}>
+                {inviteMsg}
+              </div>
+            )}
+
+            <div style={{display:'flex',gap:'0.75rem',justifyContent:'flex-end',marginTop:'0.5rem'}}>
+              <button className="btn btn-ghost" onClick={()=>setShowInvite(false)}>Close</button>
+              <button className="btn btn-primary" onClick={inviteTab==='single'?sendInvite:sendBulk}>
+                {inviteTab==='single' ? 'Send Invite' : 'Send All Invites'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EDIT USER MODAL ── */}
+      {editUser && (
+        <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&setEditUser(null)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">Edit User — {editUser.email}</div>
+              <button className="close-btn" onClick={()=>setEditUser(null)}>×</button>
+            </div>
+            {msg && <div className="alert alert-success">{msg}</div>}
+            <div className="field">
+              <label>Group</label>
+              <input className="input" value={group} onChange={e=>setGroup(e.target.value)} placeholder="e.g. sales, engineering, default"/>
+            </div>
+            <div className="field">
+              <label>Assign Template</label>
+              <select className="input" value={templateId} onChange={e=>setTemplateId(e.target.value)}>
+                <option value="">Use group/default template</option>
+                {(data.templates||[]).map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </div>
+            <div style={{display:'flex',gap:'0.75rem',justifyContent:'flex-end',marginTop:'1.5rem'}}>
+              <button className="btn btn-ghost" onClick={()=>setEditUser(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={saveUser}>Save Changes</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── TEMPLATES ─────────────────────────────────────────────────────────────────
+const SECTION_TYPES = [
+  { type:'text', label:'Custom Text', icon:'📄' },
+  { type:'meeting_details', label:'Meeting Details', icon:'📋' },
+  { type:'summary', label:'Summary', icon:'✨' },
+  { type:'action_items', label:'Action Items', icon:'✅' },
+  { type:'next_steps', label:'Next Steps', icon:'➡️' },
+];
+
+const DEFAULT_SECTIONS = [
+  { id:'s1', type:'text', label:'Opening', content:'Hi,\n\nPlease find the summary of our recent meeting below.', enabled:true },
+  { id:'s2', type:'meeting_details', label:'Meeting Details', enabled:true },
+  { id:'s3', type:'summary', label:'Summary', enabled:true },
+  { id:'s4', type:'action_items', label:'Action Items', enabled:true },
+  { id:'s5', type:'next_steps', label:'Next Steps', enabled:true },
+  { id:'s6', type:'text', label:'Closing', content:'Best regards', enabled:true },
+];
+
+function TemplateBuilder({ template, templates, users, onSave, onClose }) {
+  const isEdit = !!template?.id;
+  const [name, setName] = useState(template?.name||'');
+  const [desc, setDesc] = useState(template?.description||'');
+  const [subject, setSubject] = useState(template?.subject||'Meeting Summary: {{meeting_topic}} — {{meeting_date}}');
+  const [sections, setSections] = useState(template?.sections ? (typeof template.sections === 'string' ? JSON.parse(template.sections) : template.sections) : DEFAULT_SECTIONS);
+  const [assignTo, setAssignTo] = useState(template?.assigned_to||'all');
+  const [assignGroup, setAssignGroup] = useState(template?.assigned_group||'');
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [dragIdx, setDragIdx] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  const moveSection = (from, to) => {
+    const arr = [...sections];
+    const [item] = arr.splice(from, 1);
+    arr.splice(to, 0, item);
+    setSections(arr);
+  };
+
+  const toggleSection = (idx) => {
+    setSections(s => s.map((sec,i) => i===idx ? {...sec, enabled:!sec.enabled} : sec));
+  };
+
+  const updateContent = (idx, content) => {
+    setSections(s => s.map((sec,i) => i===idx ? {...sec, content} : sec));
+  };
+
+  const addSection = (type) => {
+    const t = SECTION_TYPES.find(t=>t.type===type);
+    setSections(s => [...s, { id:'s'+Date.now(), type, label:t?.label||type, content:'', enabled:true }]);
+  };
+
+  const removeSection = (idx) => setSections(s => s.filter((_,i)=>i!==idx));
+
+  const save = async () => {
+    if (!name || !subject) return setMsg('Name and subject are required');
+    setSaving(true);
+    try {
+      await api('template', 'POST', {
+        id: template?.id,
+        name, description:desc, subject, sections,
+        assigned_to: assignTo,
+        assigned_group: assignTo==='group' ? assignGroup : null,
+      });
+      if (assignTo==='users' && selectedUsers.length > 0) {
+        await api('assign_template', 'POST', { template_id: template?.id, user_emails: selectedUsers });
+      }
+      setMsg('Saved!');
+      setTimeout(() => { onSave(); onClose(); }, 1000);
+    } catch(e) { setMsg('Error saving'); }
+    setSaving(false);
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal" style={{maxWidth:720}}>
+        <div className="modal-header">
+          <div className="modal-title">{isEdit ? 'Edit Template' : 'New Template'}</div>
+          <button className="close-btn" onClick={onClose}>×</button>
+        </div>
+        {msg && <div className={`alert ${msg.includes('Error')?'alert-error':'alert-success'}`}>{msg}</div>}
+
+        <div className="grid-2">
+          <div className="field">
+            <label>Template Name *</label>
+            <input className="input" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Sales Meeting Summary"/>
+          </div>
+          <div className="field">
+            <label>Description</label>
+            <input className="input" value={desc} onChange={e=>setDesc(e.target.value)} placeholder="Optional note"/>
+          </div>
+        </div>
+
+        <div className="field">
+          <label>Email Subject * <span style={{color:'var(--muted)',fontWeight:400,fontSize:'0.72rem'}}>— use {'{{meeting_topic}}'}, {'{{meeting_date}}'}, {'{{host_email}}'}</span></label>
+          <input className="input" value={subject} onChange={e=>setSubject(e.target.value)}/>
+        </div>
+
+        <div className="divider"/>
+        <div style={{marginBottom:'0.75rem',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{fontWeight:600,fontSize:'0.9rem'}}>Email Sections</div>
+          <div style={{display:'flex',gap:'0.4rem',flexWrap:'wrap'}}>
+            {SECTION_TYPES.map(t=>(
+              <button key={t.type} className="btn btn-ghost btn-sm" onClick={()=>addSection(t.type)}>+ {t.icon} {t.label}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="section-list" style={{marginBottom:'1.25rem'}}>
+          {sections.map((sec, idx) => (
+            <div key={sec.id} draggable
+              onDragStart={()=>setDragIdx(idx)}
+              onDragOver={e=>{e.preventDefault()}}
+              onDrop={()=>{if(dragIdx!==null&&dragIdx!==idx){moveSection(dragIdx,idx);setDragIdx(null)}}}
+              style={{opacity:dragIdx===idx?0.5:1}}
+            >
+              <div className="section-item">
+                <span className="section-drag">⠿</span>
+                <span className="section-type-badge">{sec.type.replace('_',' ')}</span>
+                <span style={{flex:1,fontSize:'0.85rem',color:'var(--muted)'}}>{sec.label}</span>
+                <button className="btn btn-ghost btn-sm" style={{padding:'0.2rem 0.5rem',marginRight:'0.25rem'}} onClick={()=>removeSection(idx)}>✕</button>
+                <button className={`section-toggle ${sec.enabled?'on':'off'}`} onClick={()=>toggleSection(idx)}/>
+              </div>
+              {sec.type==='text' && sec.enabled && (
+                <div style={{padding:'0 1rem 0.5rem',marginTop:'-0.25rem'}}>
+                  <textarea className="input textarea" value={sec.content||''} onChange={e=>updateContent(idx,e.target.value)} placeholder="Enter text content..." style={{marginTop:'0.4rem',fontSize:'0.82rem'}}/>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="divider"/>
+        <div style={{marginBottom:'1rem',fontWeight:600,fontSize:'0.9rem'}}>Assign Template To</div>
+        <div className="toggle-group" style={{width:'fit-content',marginBottom:'1rem'}}>
+          {[['all','All Users'],['group','Group'],['users','Specific Users']].map(([val,label])=>(
+            <button key={val} className={`toggle-opt ${assignTo===val?'active':''}`} onClick={()=>setAssignTo(val)}>{label}</button>
+          ))}
+        </div>
+
+        {assignTo==='group' && (
+          <div className="field">
+            <label>Group Name</label>
+            <input className="input" value={assignGroup} onChange={e=>setAssignGroup(e.target.value)} placeholder="e.g. sales, engineering"/>
+          </div>
+        )}
+
+        {assignTo==='users' && (
+          <div className="field">
+            <label>Select Users</label>
+            <div className="chips">
+              {users.map(u=>(
+                <div key={u.email} className={`chip ${selectedUsers.includes(u.email)?'selected':''}`}
+                  onClick={()=>setSelectedUsers(s=>s.includes(u.email)?s.filter(e=>e!==u.email):[...s,u.email])}>
+                  {u.name||u.email.split('@')[0]}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{display:'flex',gap:'0.75rem',justifyContent:'flex-end',marginTop:'1.5rem'}}>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={save} disabled={saving}>{saving?'Saving…':'Save Template'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Templates({ data, onRefresh }) {
+  const [showBuilder, setShowBuilder] = useState(false);
+  const [editTemplate, setEditTemplate] = useState(null);
+  const [msg, setMsg] = useState('');
+
+  const deleteTemplate = async (id) => {
+    if (!confirm('Delete this template?')) return;
+    await api('template', 'DELETE', { id });
+    await onRefresh();
+  };
+
+  return (
+    <div>
+      <div className="section-header">
+        <div className="section-title">Email Templates ({(data.templates||[]).length})</div>
+        <button className="btn btn-primary" onClick={()=>{setEditTemplate(null);setShowBuilder(true)}}>+ New Template</button>
+      </div>
+      {msg && <div className="alert alert-success">{msg}</div>}
+
+      {(data.templates||[]).length===0
+        ? <div className="empty">No templates yet. Create one above.</div>
+        : <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}>
+            {(data.templates||[]).map(t=>(
+              <div className="card" key={t.id}>
+                <div style={{display:'flex',alignItems:'flex-start',gap:'1rem'}}>
+                  <div style={{flex:1}}>
+                    <div style={{display:'flex',alignItems:'center',gap:'0.75rem',marginBottom:'0.3rem'}}>
+                      <span style={{fontWeight:600}}>{t.name}</span>
+                      {t.assigned_to==='all' && <span className="badge badge-green">All Users</span>}
+                      {t.assigned_to==='group' && <span className="badge badge-blue">Group: {t.assigned_group}</span>}
+                      {t.assigned_to==='users' && <span className="badge badge-purple">Specific Users</span>}
+                    </div>
+                    {t.description && <div style={{color:'var(--muted)',fontSize:'0.8rem',marginBottom:'0.4rem'}}>{t.description}</div>}
+                    <div style={{fontSize:'0.78rem',color:'var(--muted)'}}>Subject: <span style={{color:'var(--text)'}}>{t.subject}</span></div>
+                    <div style={{fontSize:'0.75rem',color:'var(--muted2)',marginTop:'0.3rem'}}>
+                      {(typeof t.sections==='string'?JSON.parse(t.sections):t.sections||[]).filter(s=>s.enabled!==false).map(s=>s.type.replace('_',' ')).join(' → ')}
+                    </div>
+                  </div>
+                  <div style={{display:'flex',gap:'0.5rem',flexShrink:0}}>
+                    <button className="btn btn-ghost btn-sm" onClick={()=>{setEditTemplate(t);setShowBuilder(true)}}>Edit</button>
+                    <button className="btn btn-danger btn-sm" onClick={()=>deleteTemplate(t.id)}>Delete</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+      }
+
+      {showBuilder && (
+        <TemplateBuilder
+          template={editTemplate}
+          templates={data.templates||[]}
+          users={data.users||[]}
+          onSave={onRefresh}
+          onClose={()=>setShowBuilder(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── MEETINGS ──────────────────────────────────────────────────────────────────
+function Meetings({ data }) {
+  const [selected, setSelected] = useState(null);
+  return (
+    <div>
+      <div className="section-header">
+        <div className="section-title">Meeting History ({(data.recentMeetings||[]).length})</div>
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead><tr><th>Host</th><th>Topic</th><th>Source</th><th>Status</th><th>Duration</th><th>Date</th><th></th></tr></thead>
+          <tbody>{(data.recentMeetings||[]).length===0
+            ? <tr><td colSpan={7}><div className="empty">No meetings recorded yet</div></td></tr>
+            : (data.recentMeetings||[]).map(m=>(
+              <tr key={m.id}>
+                <td style={{fontSize:'0.82rem'}}>{m.host_email}</td>
+                <td>{m.topic||'Untitled'}</td>
+                <td>{m.summary_source ? <span className="badge badge-blue">{m.summary_source}</span> : '—'}</td>
+                <td>{m.draft_created ? <span className="badge badge-green">✓ Draft created</span>
+                  : m.error ? <span className="badge badge-red" title={m.error}>Error</span>
+                  : <span className="badge badge-yellow">Processing</span>}</td>
+                <td style={{color:'var(--muted)'}}>{m.duration_minutes ? m.duration_minutes+'m' : '—'}</td>
+                <td style={{color:'var(--muted)',fontSize:'0.78rem'}}>{m.created_at ? new Date(m.created_at).toLocaleString() : '—'}</td>
+                <td>{m.summary && <button className="btn btn-ghost btn-sm" onClick={()=>setSelected(m)}>View</button>}</td>
+              </tr>
+            ))
+          }</tbody>
+        </table>
+      </div>
+
+      {selected && (
+        <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&setSelected(null)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-title">{selected.topic||'Meeting'}</div>
+              <button className="close-btn" onClick={()=>setSelected(null)}>×</button>
+            </div>
+            <div style={{fontSize:'0.82rem',color:'var(--muted)',marginBottom:'1rem'}}>{selected.host_email} · {selected.created_at ? new Date(selected.created_at).toLocaleString():''}</div>
+            <div className="field"><label>Summary</label>
+              <div style={{background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:8,padding:'0.75rem',fontSize:'0.85rem',lineHeight:1.6,color:'var(--text)',whiteSpace:'pre-wrap'}}>{selected.summary||'No summary'}</div>
+            </div>
+            {selected.participants?.length > 0 && (
+              <div className="field"><label>Participants</label>
+                <div className="chips">{selected.participants.map(p=><div key={p} className="chip">{p}</div>)}</div>
+              </div>
+            )}
+            {selected.error && <div className="alert alert-error">{selected.error}</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── APP ───────────────────────────────────────────────────────────────────────
+function App() {
+  const [authed, setAuthed] = useState(!!localStorage.getItem(API_KEY_STORE));
+  const [tab, setTab] = useState('overview');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    try {
+      const d = await api('overview');
+      setData(d);
+    } catch(e) {
+      if (e.message==='UNAUTHORIZED') { setAuthed(false); localStorage.removeItem(API_KEY_STORE); }
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { if (authed) refresh(); }, [authed, refresh]);
+
+  if (!authed) return <Login onLogin={()=>{ setAuthed(true); refresh(); }}/>;
+
+  const TITLES = { overview:'Overview', source:'Summary Source', users:'Users', templates:'Email Templates', meetings:'Meeting History' };
+
+  return (
+    <div id="root" style={{display:'flex',height:'100vh'}}>
+      <div className="sidebar">
+        <div className="logo"><div className="logo-dot"/>MeetDraft</div>
+        <div className="nav-label">Navigation</div>
+        {NAV.map(n=>(
+          <div key={n.id} className={`nav-item ${tab===n.id?'active':''}`} onClick={()=>setTab(n.id)}>
+            <span className="nav-icon">{n.icon}</span>{n.label}
+          </div>
+        ))}
+        <div style={{flex:1}}/>
+        <div className="nav-item" onClick={()=>{localStorage.removeItem(API_KEY_STORE);setAuthed(false)}} style={{marginTop:'auto'}}>
+          <span className="nav-icon">🚪</span>Sign out
+        </div>
+      </div>
+      <div className="main">
+        <div className="topbar">
+          <div className="page-title">{TITLES[tab]}</div>
+          <button className="btn btn-ghost btn-sm" onClick={refresh}>↻ Refresh</button>
+        </div>
+        <div className="page-content">
+          {loading ? <div className="loading">Loading…</div> : !data ? <div className="empty">Failed to load</div> : (
+            <>
+              {tab==='overview' && <Overview data={data}/>}
+              {tab==='source' && <SourceSettings data={data} onRefresh={refresh}/>}
+              {tab==='users' && <Users data={data} onRefresh={refresh}/>}
+              {tab==='templates' && <Templates data={data} onRefresh={refresh}/>}
+              {tab==='meetings' && <Meetings data={data}/>}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

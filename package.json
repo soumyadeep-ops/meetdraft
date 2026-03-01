@@ -1,0 +1,19 @@
+{
+  "name": "meetdraft",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Auto-generate Gmail summaries from Zoom meetings — scalable team solution",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "init-db": "node scripts/init-db.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.0",
+    "axios": "^1.6.0",
+    "googleapis": "^128.0.0"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
+}
