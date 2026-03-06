@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "node scripts/init-db.js",
   "rewrites": [
     {
       "source": "/admin",
