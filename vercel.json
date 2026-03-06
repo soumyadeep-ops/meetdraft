@@ -2,20 +2,17 @@
   "version": 2,
   "buildCommand": "node scripts/init-db.js",
   "rewrites": [
-    { "source": "/admin", "destination": "/public/admin.html" },
-    { "source": "/join/:token", "destination": "/api/join/[token]" },
-    { "source": "/", "destination": "/public/index.html" }
-  ],
-  "env": {
-    "ZOOM_CLIENT_ID": "@zoom_client_id",
-    "ZOOM_CLIENT_SECRET": "@zoom_client_secret",
-    "ZOOM_WEBHOOK_SECRET": "@zoom_webhook_secret",
-    "GOOGLE_CLIENT_ID": "@google_client_id",
-    "GOOGLE_CLIENT_SECRET": "@google_client_secret",
-    "DATABASE_URL": "@database_url",
-    "APP_URL": "@app_url",
-    "ADMIN_SECRET": "@admin_secret",
-    "RESEND_API_KEY": "@resend_api_key",
-    "FROM_EMAIL": "@from_email"
-  }
+    {
+      "source": "/admin",
+      "destination": "/public/admin.html"
+    },
+    {
+      "source": "/join/:token",
+      "destination": "/api/join/[token]"
+    },
+    {
+      "source": "/",
+      "destination": "/public/index.html"
+    }
+  ]
 }
