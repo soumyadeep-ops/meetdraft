@@ -1,17 +1,17 @@
 {
   "version": 2,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/admin",
-      "destination": "/public/admin.html"
+      "src": "/admin",
+      "dest": "/public/admin.html"
     },
     {
-      "source": "/join/:token",
-      "destination": "/api/join/[token]"
+      "src": "/join/(.*)",
+      "dest": "/api/join/[token]"
     },
     {
-      "source": "/",
-      "destination": "/public/index.html"
+      "src": "/",
+      "dest": "/public/index.html"
     }
   ]
 }
