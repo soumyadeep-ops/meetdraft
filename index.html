@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeetDraft — Setup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F5F0;
+      --ink: #1A1814;
+      --ink2: #6B6760;
+      --ink3: #B0ADA8;
+      --surface: #EFEDE8;
+      --border: #E0DDD7;
+      --zoom-blue: #2D8CFF;
+      --google-ink: #1A1814;
+      --done: #2A7A4B;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Instrument Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Subtle grain texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── WORDMARK ── */
+    .wordmark {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink3);
+      margin-bottom: 4rem;
+      animation: arrive 0.8s ease both;
+    }
+
+    /* ── MAIN CARD ── */
+    .card {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .headline {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2.2rem, 6vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 0.75rem;
+      animation: arrive 0.8s ease 0.05s both;
+    }
+
+    .headline em {
+      font-style: italic;
+      color: var(--ink2);
+    }
+
+    .subline {
+      font-size: 0.925rem;
+      color: var(--ink2);
+      line-height: 1.65;
+      margin-bottom: 2.75rem;
+      animation: arrive 0.8s ease 0.1s both;
+    }
+
+    /* ── STEPS ── */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      animation: arrive 0.8s ease 0.15s both;
+    }
+
+    .step-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--ink3);
+      flex-shrink: 0;
+      transition: all 0.35s ease;
+      background: var(--bg);
+    }
+
+    .step-row.done .step-number {
+      background: var(--done);
+      border-color: var(--done);
+      color: #fff;
+    }
+
+    .step-row.active .step-number {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--bg);
+    }
+
+    /* ── CONNECT BUTTON ── */
+    .connect-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.1rem;
+      border-radius: 10px;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--ink);
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .connect-btn:hover {
+      border-color: var(--ink2);
+      background: var(--surface);
+      transform: translateY(-1px);
+    }
+
+    .connect-btn:active {
+      transform: translateY(0);
+    }
+
+    .connect-btn.zoom {
+      border-color: rgba(45, 140, 255, 0.3);
+      background: rgba(45, 140, 255, 0.04);
+    }
+
+    .connect-btn.zoom:hover {
+      border-color: var(--zoom-blue);
+      background: rgba(45, 140, 255, 0.08);
+    }
+
+    .connect-btn.google {
+      border-color: var(--border);
+    }
+
+    .connect-btn.done-btn {
+      border-color: rgba(42, 122, 75, 0.3);
+      background: rgba(42, 122, 75, 0.05);
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .connect-btn.done-btn .btn-label {
+      color: var(--done);
+    }
+
+    .btn-icon {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-label {
+      flex: 1;
+      text-align: left;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .btn-status {
+      font-size: 0.75rem;
+      color: var(--ink3);
+      font-weight: 400;
+    }
+
+    .btn-status.connected {
+      color: var(--done);
+    }
+
+    /* Step disabled */
+    .step-row.disabled .connect-btn {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .step-row.disabled .step-number {
+      opacity: 0.4;
+    }
+
+    /* ── CONNECTOR LINE ── */
+    .step-connector {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .connector-line-wrap {
+      width: 28px;
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .connector-line {
+      width: 1.5px;
+      height: 0.75rem;
+      background: var(--border);
+    }
+
+    /* ── SPINNER ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--ink2);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ── SUCCESS STATE ── */
+    .success-wrap {
+      display: none;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      animation: arrive 0.5s ease both;
+    }
+
+    .success-wrap.visible { display: flex; }
+
+    .success-headline {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.6rem;
+      color: var(--ink);
+      margin-bottom: 0.25rem;
+    }
+
+    .success-sub {
+      font-size: 0.875rem;
+      color: var(--ink2);
+      line-height: 1.6;
+    }
+
+    .success-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(42,122,75,0.08);
+      border: 1px solid rgba(42,122,75,0.2);
+      color: var(--done);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.3rem 0.75rem;
+      border-radius: 100px;
+      margin-top: 1.25rem;
+    }
+
+    /* ── FOOTER NOTE ── */
+    .footer-note {
+      margin-top: 2.5rem;
+      font-size: 0.78rem;
+      color: var(--ink3);
+      line-height: 1.6;
+      animation: arrive 0.8s ease 0.25s both;
+    }
+
+    .footer-note a {
+      color: var(--ink2);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes arrive {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes checkPop {
+      0%   { transform: scale(0); opacity: 0; }
+      70%  { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .check-icon { animation: checkPop 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="wordmark">MeetDraft</div>
+
+  <div class="card" id="setupCard">
+    <h1 class="headline">Two steps,<br/><em>you're done.</em></h1>
+    <p class="subline">Connect your accounts once. After every meeting, a summary draft appears in your Gmail — ready to send.</p>
+
+    <div class="steps" id="stepsContainer">
+
+      <!-- Step 1: Zoom -->
+      <div class="step-row" id="step1Row">
+        <div class="step-number" id="step1Num">1</div>
+        <a href="/api/auth/zoom" class="connect-btn zoom" id="zoomBtn">
+          <div class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect width="24" height="24" rx="5" fill="#2D8CFF"/>
+              <path d="M5 8.5C5 7.67 5.67 7 6.5 7h7C14.33 7 15 7.67 15 8.5v7c0 .83-.67 1.5-1.5 1.5h-7C5.67 17 5 16.33 5 15.5v-7z" fill="white"/>
+              <path d="M16 10.2l3-2v7.6l-3-2v-3.6z" fill="white"/>
+            </svg>
+          </div>
+          <span class="btn-label">Connect Zoom</span>
+          <span class="btn-status" id="zoomStatus">Tap to connect</span>
+        </a>
+      </div>
+
+      <div class="step-connector">
+        <div class="connector-line-wrap"><div class="connector-line"></div></div>
+      </div>
+
+      <!-- Step 2: Google -->
+      <div class="step-row disabled" id="step2Row">
+        <div class="step-number" id="step2Num">2</div>
+        <a href="#" class="connect-btn google" id="googleBtn">
+          <div class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+          </div>
+          <span class="btn-label">Connect Gmail</span>
+          <span class="btn-status" id="googleStatus">After step 1</span>
+        </a>
+      </div>
+
+    </div>
+
+    <p class="footer-note" id="footerNote">
+      Your invite link is unique to you. We only create drafts — we never read or send your emails.
+    </p>
+  </div>
+
+  <!-- Success state (hidden until complete) -->
+  <div class="card success-wrap" id="successCard">
+    <div class="success-pill">
+      <svg class="check-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      All connected
+    </div>
+    <h2 class="success-headline" style="margin-top:1rem">You're all set.</h2>
+    <p class="success-sub">
+      Host your Zoom meetings as usual.<br/>
+      After each one ends, check <strong>Gmail → Drafts</strong>.<br/>
+      Your summary will be there, ready to send.
+    </p>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('email') || '';
+  const zoomDone = params.get('zoom_done') === '1';
+  const allDone = params.get('done') === '1';
+
+  // ── Success state ──────────────────────────────────────────────────────────
+  if (allDone) {
+    document.getElementById('setupCard').style.display = 'none';
+    document.getElementById('successCard').classList.add('visible');
+  }
+
+  // ── Zoom connected, now unlock step 2 ────────────────────────────────────
+  else if (zoomDone) {
+    // Mark step 1 done
+    const step1Row = document.getElementById('step1Row');
+    step1Row.classList.add('done');
+    document.getElementById('step1Num').innerHTML = `
+      <svg class="check-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+
+    const zoomBtn = document.getElementById('zoomBtn');
+    zoomBtn.classList.add('done-btn');
+    zoomBtn.querySelector('.btn-label').textContent = 'Zoom connected';
+    zoomBtn.querySelector('.btn-status').textContent = '';
+    zoomBtn.querySelector('.btn-status').classList.add('connected');
+
+    // Unlock step 2
+    const step2Row = document.getElementById('step2Row');
+    step2Row.classList.remove('disabled');
+    step2Row.classList.add('active');
+    document.getElementById('step2Num').style.cssText = 'background:var(--ink);border-color:var(--ink);color:var(--bg)';
+    document.getElementById('googleStatus').textContent = 'Tap to connect';
+
+    // Wire up Google button
+    const googleBtn = document.getElementById('googleBtn');
+    googleBtn.href = '/api/auth/google?email=' + encodeURIComponent(email);
+
+    document.getElementById('footerNote').textContent =
+      'One more step — connect Gmail so we know where to put your drafts.';
+  }
+
+  // ── Default: step 1 active ────────────────────────────────────────────────
+  else {
+    document.getElementById('step1Row').classList.add('active');
+
+    // If came via invite, embed email in Zoom auth flow via state
+    const zoomBtn = document.getElementById('zoomBtn');
+    if (email) {
+      zoomBtn.href = '/api/auth/zoom?hint=' + encodeURIComponent(email);
+    }
+
+    // Disable Google until Zoom done
+    document.getElementById('step2Row').classList.add('disabled');
+
+    // Show loading on click
+    zoomBtn.addEventListener('click', function() {
+      setTimeout(() => {
+        this.querySelector('.btn-status').innerHTML = '<span style="display:inline-flex"><div class="spinner"></div></span>';
+        this.querySelector('.btn-label').textContent = 'Connecting…';
+      }, 100);
+    });
+  }
+</script>
+</body>
+</html>
