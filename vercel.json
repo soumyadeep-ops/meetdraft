@@ -3,7 +3,7 @@
   "routes": [
     {
       "src": "/admin",
-      "dest": "/public/admin.html"
+      "dest": "/api/admin-page"
     },
     {
       "src": "/join/(.*)",
@@ -11,7 +11,7 @@
     },
     {
       "src": "/",
-      "dest": "/public/index.html"
+      "dest": "/api/index-page"
     }
   ]
 }
