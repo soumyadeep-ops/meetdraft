@@ -949,17 +949,30 @@
       };
 
       const sendBulk = async () => {
-        const lines = bulkText.split('\n').map(l => l.trim()).filter(Boolean);
-        const emails = lines.map(l => {
-          const parts = l.split(',');
-          return { email: parts[0].trim(), name: (parts[1] || '').trim() };
-        }).filter(e => e.email.includes('@'));
-        if (!emails.length) return setInviteMsg('No valid emails found');
-        setInviteMsg('Sending ' + emails.length + ' invites...');
-        await api('bulk_invite', 'POST', { emails, group_name: inviteGroup });
-        await onRefresh();
-        setInviteMsg('✓ ' + emails.length + ' invites sent!');
-        setBulkText('');
+        try {
+          const lines = bulkText.split('\n').map(l => l.trim()).filter(Boolean);
+          const emails = lines.map(l => {
+            const parts = l.split(',');
+            return {
+              email: (parts[0] || '').trim(),
+              name: (parts[1] || '').trim()
+            };
+          }).filter(e => e.email.includes('@'));
+
+          if (!emails.length) {
+            setInviteMsg('No valid emails found');
+            return;
+          }
+
+          setInviteMsg('Sending ' + emails.length + ' invites...');
+          await api('bulk_invite', 'POST', { emails, group_name: inviteGroup });
+          await onRefresh();
+          setInviteMsg('✓ ' + emails.length + ' invites sent!');
+          setBulkText('');
+        } catch (err) {
+          setInviteMsg('Error sending bulk invites');
+          console.error(err);
+        }
       };
 
       const pendingCount = (data.users || []).filter(u => u.invite_url && !u.onboarded).length;
